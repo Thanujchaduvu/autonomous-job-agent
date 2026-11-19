@@ -1,0 +1,89 @@
+{
+  "name": "Thanuj Chaduvu",
+  "title": "Generative AI Engineer",
+  "email": "chaduvuthanuj@gmail.com",
+  "phone": "+91-7661007080",
+  "location": "Hyderabad, India",
+  "education": "B.Tech in Data Science, CMR Technical Campus, Hyderabad (June 2026, CGPA: 8.39/10.0)",
+  "experience_years": 0,
+  "experience_level": "Fresher / Entry-Level / Junior (2026 Graduate)",
+  "target_roles": [
+    "Generative AI Engineer",
+    "AI Engineer",
+    "Machine Learning Engineer",
+    "Python Backend Developer",
+    "Full-Stack AI Developer",
+    "LLM Application Developer"
+  ],
+  "skills": [
+    "Python",
+    "JavaScript",
+    "OpenAI API",
+    "Google Gemini API",
+    "Prompt Engineering",
+    "Retrieval-Augmented Generation (RAG)",
+    "Embeddings",
+    "AI Agents",
+    "LangChain",
+    "LangGraph",
+    "LlamaIndex",
+    "FAISS",
+    "ChromaDB",
+    "PyTorch",
+    "Scikit-learn",
+    "Pandas",
+    "NumPy",
+    "FastAPI",
+    "Node.js",
+    "Express.js",
+    "REST API Design",
+    "JWT Authentication",
+    "Google OAuth",
+    "RBAC",
+    "React.js",
+    "Next.js",
+    "Vite",
+    "Tailwind CSS",
+    "PostgreSQL",
+    "Supabase",
+    "MySQL",
+    "SQLAlchemy",
+    "Docker",
+    "Google Cloud",
+    "Vercel",
+    "Render"
+  ],
+  "projects": [
+    {
+      "name": "GrowEasy AI CSV Importer",
+      "live_url": "https://groweasy-frontend-oz9b.vercel.app",
+      "description": "GenAI CRM data import app using Google Gemini API, Prompt Engineering, React/Next.js, Node.js/Express, and PostgreSQL with human-in-the-loop field mapping review."
+    },
+    {
+      "name": "AI-Powered Smart Hospital Management System",
+      "live_url": "https://smart-hospital-management-system-iw.vercel.app",
+      "description": "Full-stack platform with Gemini-powered AI Health Assistant, 5 RBAC dashboards, JWT + Google OAuth, and normalized PostgreSQL (Supabase) backend."
+    },
+    {
+      "name": "Fireflies AI Clone - AI Meeting Assistant",
+      "description": "FastAPI, SQLAlchemy, SQLite, and Next.js AI meeting assistant managing transcripts, summaries, and action items."
+    },
+    {
+      "name": "AI Chatbot (OpenAI API Integration)",
+      "description": "Real-time conversational React.js chatbot powered by OpenAI API with persistent message history."
+    }
+  ],
+  "certifications": [
+    "Google Cloud Career Launchpad Program - Google Cloud (2024)",
+    "TalentNext Digital Skills Program - Wipro (2025)",
+    "Process Mining Virtual Internship - EduSkills (2024)"
+  ],
+  "links": {
+    "github": "https://github.com/Thanujchaduvu",
+    "linkedin": "https://linkedin.com/in/chaduvu-thanuj04"
+  },
+  "preferences": {
+    "work_mode": ["Remote", "Hybrid", "On-site (Hyderabad, Bangalore, Pune, Chennai)"],
+    "avoid": ["Senior roles (3+ years)", "PHP", "WordPress", "Sales", "BPO"]
+  }
+}

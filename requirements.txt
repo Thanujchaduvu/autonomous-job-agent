@@ -1,0 +1,27 @@
+# AI & Orchestration
+langgraph>=0.2.0
+langchain-core>=0.3.0
+google-genai>=0.3.0
+
+# Web Scraping & Browser Automation
+playwright>=1.45.0
+playwright-stealth>=1.0.6
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+tavily-python>=0.5.0
+
+# Email & DNS Validation
+dnspython>=2.4.0
+email-validator>=2.0.0
+
+# Data, Scheduling & Logging
+pandas>=2.0.0
+APScheduler>=3.10.0
+pytz>=2024.1
+python-dotenv>=1.0.0
+colorlog>=6.7.0
+
+# Web Dashboard
+Flask>=3.0.0
+flask-cors>=4.0.0lxml>=5.0.0
+fpdf2
