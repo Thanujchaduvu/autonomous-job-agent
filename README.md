@@ -118,3 +118,14 @@ python main.py --run-now --no-dashboard
 
 # 4. Start Background Scheduler (09:00 IST daily) + Dashboard Only[cite: 7, 10]
 python main.py
+
+<img width="1920" height="1080" alt="Screenshot (82)" src="https://github.com/user-attachments/assets/67a735f2-e275-414e-82ea-5bdb76ba8dea" />
+<img width="1920" height="1080" alt="Screenshot (83)" src="https://github.com/user-attachments/assets/2db310af-7c7a-4f16-814c-22017cbc57da" />
+<img width="1920" height="1080" alt="Screenshot (84)" src="https://github.com/user-attachments/assets/2ddbeeec-7613-4ef0-9bba-3c6310ec5f1c" />
+<img width="1920" height="1080" alt="Screenshot (85)" src="https://github.com/user-attachments/assets/71e90677-243a-438b-975f-2590bbf6bff4" />
+<img width="1920" height="1080" alt="Screenshot (86)" src="https://github.com/user-attachments/assets/0693a6ce-6e3f-4fec-b816-1d1d3401bc43" />
+
+<img width="1920" height="1080" alt="Screenshot (87)" src="https://github.com/user-attachments/assets/68f16eb0-2500-451f-94ff-70f90b74ac71" />
+<img width="1920" height="1080" alt="Screenshot (88)" src="https://github.com/user-attachments/assets/d66016ff-1e06-420f-a8fc-44756c710869" />
+
+<img width="1920" height="1080" alt="Screenshot (81)" src="https://github.com/user-attachments/assets/134e144c-da57-4881-a12f-98ea857a53d3" />
