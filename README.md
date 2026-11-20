@@ -1,5 +1,5 @@
 # Autonomous AI Job Application & Outreach Agent
-
+live on : http://127.0.0.1:5000/
 A production-grade, multi-agent AI job application platform orchestrated with **LangGraph** and **Google Gemini 2.5 Flash**[cite: 1, 3, 9]. The system scrapes live openings across 6 job portals[cite: 1, 5], filters and scores matches against the candidate's profile[cite: 2, 5], dynamically generates **ATS-optimized 1-page PDF resumes** per job, submits portal applications via **Playwright** with persistent login sessions[cite: 2, 6, 9], sends MX-verified **HR cold follow-up emails** with tailored resumes attached[cite: 2, 6, 9], monitors recruiter replies via **IMAP**[cite: 3, 6, 9], and serves a real-time **Flask + Chart.js** monitoring dashboard[cite: 2, 7, 10].
 
 
