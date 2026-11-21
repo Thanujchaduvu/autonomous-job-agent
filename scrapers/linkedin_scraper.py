@@ -56,17 +56,22 @@ def _scrape_authenticated_playwright(queries: list[str], location: str) -> list[
             )
             try:
                 page.goto(search_url, wait_until="domcontentloaded", timeout=25000)
-                page.wait_for_timeout(3500)
-                cards = page.query_selector_all("div.job-card-container, li.jobs-search-results__list-item")
+                page.wait_for_timeout(4000)
+                if "login" in page.url or "authwall" in page.url:
+                    print("[Scraper:LinkedIn:Playwright] Session not logged in (redirected to login).")
+                    break
+                page.mouse.wheel(0, 1500)
+                page.wait_for_timeout(1500)
+                cards = page.query_selector_all("[data-job-id]")
                 for card in cards[:15]:
-                    link = card.query_selector("a.job-card-list__title--link, a.job-card-container__link")
-                    company_el = card.query_selector(".artdeco-entity-lockup__subtitle, .job-card-container__primary-description")
-                    loc_el = card.query_selector(".artdeco-entity-lockup__caption, .job-card-container__metadata-wrapper li")
-                    if not link:
+                    job_id = card.get_attribute("data-job-id")
+                    link = card.query_selector("a[href*='/jobs/view/']")
+                    company_el = card.query_selector(".artdeco-entity-lockup__subtitle, span.job-card-container__primary-description")
+                    loc_el = card.query_selector(".artdeco-entity-lockup__caption, li.job-card-container__metadata-item")
+                    if not (job_id and link):
                         continue
-                    href = link.get_attribute("href") or ""
-                    full_url = f"https://www.linkedin.com{href.split('?')[0]}" if href.startswith("/") else href.split("?")[0]
-                    if not full_url or full_url in seen:
+                    full_url = f"https://www.linkedin.com/jobs/view/{job_id}/"
+                    if full_url in seen:
                         continue
                     seen.add(full_url)
                     jobs.append({
