@@ -1,84 +1,126 @@
-import random
+﻿import random
 import time
-from typing import Any, Dict, List
+from urllib.parse import quote_plus
 import requests
 from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 from config import Config
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    ),
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
-def scrape_linkedin() -> List[Dict[str, Any]]:
-    """Fetch public entry-level/mid AI & Python job cards from LinkedIn's guest endpoint."""
-    base_url = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
-        ),
-        "Accept-Language": "en-US,en;q=0.9",
-    }
 
-    search_queries = ["AI Engineer", "Python Developer", "Machine Learning"]
-    location = Config.SEARCH_LOCATION[0] if Config.SEARCH_LOCATION else "India"
-    jobs: List[Dict[str, Any]] = []
-    seen_urls = set()
+def _parse_guest_cards(html: str) -> list[dict]:
+    soup = BeautifulSoup(html, "html.parser")
+    jobs = []
+    for card in soup.select("li"):
+        title_el = card.select_one("h3.base-search-card__title")
+        company_el = card.select_one("h4.base-search-card__subtitle")
+        loc_el = card.select_one("span.job-search-card__location")
+        link_el = card.select_one("a.base-card__full-link")
+        if not (title_el and link_el):
+            continue
+        url = link_el.get("href", "").split("?")[0].strip()
+        if not url:
+            continue
+        jobs.append({
+            "title": title_el.get_text(strip=True),
+            "company": company_el.get_text(strip=True) if company_el else "Unknown",
+            "location": loc_el.get_text(strip=True) if loc_el else "India",
+            "url": url,
+            "portal": "linkedin",
+            "description": "",
+        })
+    return jobs
 
-    for kw in search_queries:
-        try:
-            params = {
-                "keywords": kw,
-                "location": location,
-                "f_TPR": "r604800",  # Past 7 days
-                "f_E": "1,2",        # 1=Internship, 2=Entry level
-                "start": 0,
-            }
-            resp = requests.get(base_url, params=params, headers=headers, timeout=20)
-            if resp.status_code == 429:
-                print("[Scraper:LinkedIn] Rate-limited (429); skipping remaining queries.")
-                break
-            resp.raise_for_status()
 
-            soup = BeautifulSoup(resp.text, "html.parser")
-            cards = soup.find_all("li")
-
-            for card in cards:
-                title_el = card.find("h3", class_="base-search-card__title")
-                company_el = card.find("h4", class_="base-search-card__subtitle")
-                loc_el = card.find("span", class_="job-search-card__location")
-                link_el = card.find("a", class_="base-card__full-link")
-
-                if not title_el or not link_el:
-                    continue
-
-                raw_url = link_el.get("href", "").split("?")[0].strip()
-                if not raw_url or raw_url in seen_urls:
-                    continue
-                seen_urls.add(raw_url)
-
-                title = title_el.get_text(strip=True)
-                company = company_el.get_text(strip=True) if company_el else "Unknown Company"
-                job_loc = loc_el.get_text(strip=True) if loc_el else location
-
-                jobs.append(
-                    {
-                        "job_url": raw_url,
-                        "job_title": title,
-                        "company": company,
-                        "location": job_loc,
+def _scrape_authenticated_playwright(queries: list[str], location: str) -> list[dict]:
+    jobs = []
+    seen = set()
+    with sync_playwright() as p:
+        ctx = p.chromium.launch_persistent_context(
+            user_data_dir="data/browser_profile",
+            headless=True,
+            viewport={"width": 1366, "height": 768},
+        )
+        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        for q in queries[:2]:
+            search_url = (
+                f"https://www.linkedin.com/jobs/search/?keywords={quote_plus(q)}"
+                f"&location={quote_plus(location)}&f_TPR=r604800"
+            )
+            try:
+                page.goto(search_url, wait_until="domcontentloaded", timeout=25000)
+                page.wait_for_timeout(3500)
+                cards = page.query_selector_all("div.job-card-container, li.jobs-search-results__list-item")
+                for card in cards[:15]:
+                    link = card.query_selector("a.job-card-list__title--link, a.job-card-container__link")
+                    company_el = card.query_selector(".artdeco-entity-lockup__subtitle, .job-card-container__primary-description")
+                    loc_el = card.query_selector(".artdeco-entity-lockup__caption, .job-card-container__metadata-wrapper li")
+                    if not link:
+                        continue
+                    href = link.get_attribute("href") or ""
+                    full_url = f"https://www.linkedin.com{href.split('?')[0]}" if href.startswith("/") else href.split("?")[0]
+                    if not full_url or full_url in seen:
+                        continue
+                    seen.add(full_url)
+                    jobs.append({
+                        "title": link.inner_text().strip().split("\n")[0],
+                        "company": company_el.inner_text().strip() if company_el else "Unknown",
+                        "location": loc_el.inner_text().strip() if loc_el else location,
+                        "url": full_url,
                         "portal": "linkedin",
-                        "job_description": f"{title} at {company} ({job_loc}) - Sourced via LinkedIn public board.",
-                        "apply_type": "email",  # Route to cold email to avoid ToS auto-apply violations[cite: 17]
-                    }
-                )
+                        "description": "",
+                    })
+            except Exception as exc:
+                print(f"[Scraper:LinkedIn:Playwright] Warning for '{q}': {exc}")
+        ctx.close()
+    return jobs
 
-            time.sleep(random.uniform(2.0, 4.0))
+
+def scrape_linkedin() -> list[dict]:
+    queries = getattr(Config, "SEARCH_QUERIES", None) or [
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Full Stack Developer",
+    ]
+    location = getattr(Config, "TARGET_LOCATION", "India")
+    collected = []
+    seen_urls = set()
+    rate_limited = False
+
+    for q in queries[:3]:
+        api_url = (
+            f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
+            f"?keywords={quote_plus(q)}&location={quote_plus(location)}&f_TPR=r604800&start=0"
+        )
+        try:
+            resp = requests.get(api_url, headers=HEADERS, timeout=15)
+            if resp.status_code == 429:
+                print("[Scraper:LinkedIn] Guest API rate-limited (429); switching to authenticated session.")
+                rate_limited = True
+                break
+            if resp.status_code == 200:
+                for item in _parse_guest_cards(resp.text):
+                    if item["url"] not in seen_urls:
+                        seen_urls.add(item["url"])
+                        collected.append(item)
+            time.sleep(random.uniform(3.0, 5.5))
         except Exception as exc:
-            print(f"[Scraper:LinkedIn] Error for query '{kw}': {exc}")
+            print(f"[Scraper:LinkedIn] Guest API error: {exc}")
+            rate_limited = True
+            break
 
-    return jobs[:30]
+    if not collected or rate_limited:
+        pw_jobs = _scrape_authenticated_playwright(queries, location)
+        for item in pw_jobs:
+            if item["url"] not in seen_urls:
+                seen_urls.add(item["url"])
+                collected.append(item)
 
-
-if __name__ == "__main__":
-    results = scrape_linkedin()
-    print(f"LinkedIn fetched: {len(results)} jobs")
-    if results:
-        print("Sample:", results[0]["job_title"], "@", results[0]["company"])
+    return collected
