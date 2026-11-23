@@ -1,4 +1,5 @@
-﻿import random
+﻿import datetime
+import random
 import time
 from urllib.parse import quote_plus
 import requests
@@ -13,6 +14,26 @@ HEADERS = {
     ),
     "Accept-Language": "en-US,en;q=0.9",
 }
+
+DAILY_QUERY_POOL = [
+    "AI Engineer",
+    "Generative AI Engineer",
+    "Machine Learning Engineer",
+    "Full Stack Developer",
+    "Python Developer FastAPI",
+    "Next.js React Developer",
+    "LLM RAG Engineer",
+    "Software Development Engineer",
+    "AI Agent Developer",
+]
+
+
+def _get_todays_queries() -> list[str]:
+    base = list(getattr(Config, "SEARCH_QUERIES", None) or [])
+    pool = list(dict.fromkeys(base + DAILY_QUERY_POOL))
+    day_offset = datetime.date.today().toordinal() % len(pool)
+    rotated = pool[day_offset:] + pool[:day_offset]
+    return rotated[:3]
 
 
 def _parse_guest_cards(html: str) -> list[dict]:
@@ -50,9 +71,10 @@ def _scrape_authenticated_playwright(queries: list[str], location: str) -> list[
         )
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         for q in queries[:2]:
+            # f_TPR=r86400 fetches jobs posted in the past 24 hours; sortBy=DD sorts by most recent
             search_url = (
                 f"https://www.linkedin.com/jobs/search/?keywords={quote_plus(q)}"
-                f"&location={quote_plus(location)}&f_TPR=r604800"
+                f"&location={quote_plus(location)}&f_TPR=r86400&sortBy=DD"
             )
             try:
                 page.goto(search_url, wait_until="domcontentloaded", timeout=25000)
@@ -89,20 +111,16 @@ def _scrape_authenticated_playwright(queries: list[str], location: str) -> list[
 
 
 def scrape_linkedin() -> list[dict]:
-    queries = getattr(Config, "SEARCH_QUERIES", None) or [
-        "AI Engineer",
-        "Machine Learning Engineer",
-        "Full Stack Developer",
-    ]
+    queries = _get_todays_queries()
     location = getattr(Config, "TARGET_LOCATION", "India")
     collected = []
     seen_urls = set()
     rate_limited = False
 
-    for q in queries[:3]:
+    for q in queries:
         api_url = (
             f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
-            f"?keywords={quote_plus(q)}&location={quote_plus(location)}&f_TPR=r604800&start=0"
+            f"?keywords={quote_plus(q)}&location={quote_plus(location)}&f_TPR=r86400&sortBy=DD&start=0"
         )
         try:
             resp = requests.get(api_url, headers=HEADERS, timeout=15)
