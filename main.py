@@ -35,9 +35,9 @@ def setup_logging() -> logging.Logger:
     logger.handlers.clear()
 
     # Daily rotating file handler
-    file_handler = TimedRotatingFileHandler(delay=True, 
+    file_handler = TimedRotatingFileHandler(
         "logs/agent.log", when="midnight", interval=1, backupCount=14, encoding="utf-8"
-    )
+    , delay=True)
     file_handler.setFormatter(
         logging.Formatter("%(asctime)s | %(levelname)-8s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
     )
